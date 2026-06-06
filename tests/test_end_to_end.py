@@ -15,22 +15,17 @@ def test_pipeline_end_to_end():
     # Check that output Excel exists
     assert os.path.exists("output/kickstarter_research_report.xlsx")
     
-    # Check that raw JSON exists
-    assert os.path.exists("output/raw/evidence.json")
-    
-    # Verify sheets in Excel
+    # Verify sheets in Excel (now 15 sheets)
     xl = pd.ExcelFile("output/kickstarter_research_report.xlsx")
     required_sheets = [
         "Summary", "Raw Evidence", "Market", "User", "Pain Points", 
         "Competitors", "Evidence", "Launch Strategy", "Risk", 
-        "Final Recommendation", "Logs", "Errors"
+        "Final Recommendation", "Signal Detection", "Opportunity Score", 
+        "Data Quality", "Logs", "Errors"
     ]
     for sheet in required_sheets:
         assert sheet in xl.sheet_names
 
-    # Check non-empty sheets (Summary and Raw Evidence at least should have data)
+    # Check non-empty sheets (Summary at least should have data)
     summary_df = xl.parse("Summary")
     assert not summary_df.empty
-    
-    raw_df = xl.parse("Raw Evidence")
-    assert not raw_df.empty

@@ -1,7 +1,7 @@
 import os
 import pytest
 from app.exporters.excel import ExcelExporter
-from app.models.evidence import RawEvidence, MappedEvidence
+from app.models.evidence import RawEvidence, MappedEvidence, DataQualityMetric
 from datetime import datetime
 
 def test_excel_export():
@@ -17,7 +17,8 @@ def test_excel_export():
             source_location="http://test.com",
             timestamp=datetime.now(),
             extracted_text="Test raw data",
-            relevance_score=0.9
+            evidence_score=90.0,
+            frequency=1
         )
     ]
     
@@ -29,7 +30,19 @@ def test_excel_export():
         )
     ]
     
-    exporter.export(raw, mapped)
+    quality = [
+        DataQualityMetric(
+            metric_name="Test Metric",
+            value=100.0,
+            notes="Test notes"
+        )
+    ]
+    
+    stats = {
+        "Total Projects": 1
+    }
+    
+    exporter.export(raw, mapped, quality, stats)
     
     assert os.path.exists(output_path)
     
