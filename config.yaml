@@ -1,0 +1,13 @@
+product_name: "Smart Coffee Mug"
+product_description: "A mug that keeps coffee hot using app-controlled heating elements."
+target_categories:
+  - "Product Design"
+  - "Technology"
+target_keywords:
+  - "smart mug"
+  - "heated mug"
+  - "coffee tech"
+time_window: "last_12_months"
+source_platforms:
+  - "Kickstarter"
+output_path: "output/kickstarter_research_report.xlsx"
