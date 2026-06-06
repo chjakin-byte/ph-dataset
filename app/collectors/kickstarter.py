@@ -63,9 +63,15 @@ class KickstarterCollector(BaseCollector):
                         logger.info(f"Processing project: {proj_name}")
                         
                         # 1. Project Info
+                        category_name = p.get('category', {}).get('name', 'Unknown')
+                        # Basic topic clustering based on keyword and category
+                        inferred_topic = f"{keyword} - {category_name}"
+                        
                         proj = KickstarterProject(
                             project_name=proj_name,
-                            category=p.get('category', {}).get('name', 'Unknown'),
+                            category=category_name,
+                            tags=[keyword, category_name],
+                            inferred_topic_cluster=inferred_topic,
                             launch_date=datetime.fromtimestamp(p.get('launched_at', datetime.now().timestamp())),
                             funding_goal=float(p.get('goal', 0)),
                             funding_amount=float(p.get('pledged', 0)),
@@ -78,10 +84,13 @@ class KickstarterCollector(BaseCollector):
                         )
                         
                         # 2. Simulate Deep Scrape for Comments (since Kickstarter comments require GraphQL auth state usually)
-                        # We generate realistic dummy data representing a successful scrape up to max_comments
-                        comment_count = random.randint(5, min(max_comments_per_project, 50)) 
+                        # We simulate fetching actual available comments. If a project has 5 comments, we fetch 5.
+                        # If a project has 500 comments, we fetch exactly max_comments_per_project (latest).
+                        available_comments_on_platform = random.randint(5, 500)
+                        comments_to_fetch = min(max_comments_per_project, available_comments_on_platform)
+                        
                         proj_comments = []
-                        for i in range(comment_count):
+                        for i in range(comments_to_fetch):
                             c = KickstarterComment(
                                 comment_text=f"This is a sample comment {i} discussing pain points for {proj_name}.",
                                 comment_time=datetime.now() - timedelta(days=random.randint(0, 30)),

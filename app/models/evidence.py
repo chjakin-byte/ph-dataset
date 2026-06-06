@@ -31,6 +31,8 @@ class KickstarterComment(BaseModel):
 class KickstarterProject(BaseModel):
     project_name: str
     category: str
+    tags: List[str] = []
+    inferred_topic_cluster: str = "Unknown"
     launch_date: Optional[datetime]
     funding_goal: float
     funding_amount: float
@@ -50,10 +52,7 @@ class SignalScore(BaseModel):
     evidence_references: List[str]
     description: str
 
-class OpportunityScore(BaseModel):
-    opportunity_name: str
-    overall_score: float
-    contributing_signals: List[str]
+# Opportunity Score model is removed for V1.5 to focus on Signal Score and Raw Data
     
 class DataQualityMetric(BaseModel):
     metric_name: str

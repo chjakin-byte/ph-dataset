@@ -13,7 +13,7 @@ class ExcelExporter:
         self.required_sheets = [
             "Summary", "Raw Evidence", "Market", "User", "Pain Points", 
             "Competitors", "Evidence", "Launch Strategy", "Risk", 
-            "Final Recommendation", "Signal Detection", "Opportunity Score", 
+            "Final Recommendation", "Signal Detection", "Signal Score", 
             "Data Quality", "Logs", "Errors"
         ]
 
@@ -64,8 +64,8 @@ class ExcelExporter:
             # 11. Signal Detection (Placeholder for Phase 2)
             pd.DataFrame(columns=["signal_name", "signal_score", "evidence_references", "description"]).to_excel(writer, sheet_name="Signal Detection", index=False)
             
-            # 12. Opportunity Score (Placeholder for Phase 3)
-            pd.DataFrame(columns=["opportunity_name", "overall_score", "contributing_signals"]).to_excel(writer, sheet_name="Opportunity Score", index=False)
+            # 12. Signal Score (Placeholder for Phase 2 - Replaced Opportunity Score)
+            pd.DataFrame(columns=["signal_name", "signal_score", "evidence_references", "description"]).to_excel(writer, sheet_name="Signal Score", index=False)
 
             # 13. Data Quality
             dq_data = [q.model_dump() for q in quality_metrics]

@@ -1,6 +1,7 @@
 import yaml
 import json
 import os
+from datetime import datetime
 from typing import Dict, Any, List
 from app.models.config import PipelineConfig
 from app.models.evidence import RawEvidence, KickstarterComment, KickstarterRewardTier, KickstarterProject
@@ -33,6 +34,14 @@ class PipelineRunner:
     def run(self):
         logger.info(f"Starting pipeline for product: {self.config.product_name}")
         
+        # Setup Snapshot Directory
+        now = datetime.now()
+        date_str = now.strftime("%Y-%m-%d")
+        time_str = now.strftime("%H%M%S")
+        snapshot_dir = f"output/snapshots/{date_str}/run_{time_str}"
+        os.makedirs(f"{snapshot_dir}/raw", exist_ok=True)
+        os.makedirs(f"{snapshot_dir}/cleaned", exist_ok=True)
+        
         try:
             # 1. Collect
             collector = KickstarterCollector()
@@ -44,21 +53,19 @@ class PipelineRunner:
             comments: List[KickstarterComment] = raw_data["comments"]
             rewards: List[KickstarterRewardTier] = raw_data["rewards"]
             
-            # Save Raw JSON
-            os.makedirs("output/raw", exist_ok=True)
-            with open("output/raw/projects.json", "w") as f:
+            # Save Raw JSON to Snapshot
+            with open(f"{snapshot_dir}/raw/projects.json", "w") as f:
                 json.dump([p.model_dump(mode='json') for p in projects], f, indent=2)
-            with open("output/raw/comments.json", "w") as f:
+            with open(f"{snapshot_dir}/raw/comments.json", "w") as f:
                 json.dump([c.model_dump(mode='json') for c in comments], f, indent=2)
-            with open("output/raw/rewards.json", "w") as f:
+            with open(f"{snapshot_dir}/raw/rewards.json", "w") as f:
                 json.dump([r.model_dump(mode='json') for r in rewards], f, indent=2)
 
             # 2. Quality & Cleaning (Deduplication)
             logger.info("Starting Deduplication and Quality Analysis")
             cleaned_comments, duplicate_comments_count = self.deduplicator.deduplicate_comments(comments)
             
-            os.makedirs("output/cleaned", exist_ok=True)
-            with open("output/cleaned/comments.json", "w") as f:
+            with open(f"{snapshot_dir}/cleaned/comments.json", "w") as f:
                 json.dump([c.model_dump(mode='json') for c in cleaned_comments], f, indent=2)
                 
             # Compute Quality Metrics
@@ -105,11 +112,16 @@ class PipelineRunner:
                 "Total Updates": sum(p.update_count for p in projects)
             }
             
-            # 5. Export
-            exporter = ExcelExporter(self.config.output_path)
+            # 5. Export to Snapshot and copy to latest
+            snapshot_excel_path = f"{snapshot_dir}/kickstarter_research_report.xlsx"
+            exporter = ExcelExporter(snapshot_excel_path)
             exporter.export(raw_evidence_list, mapped_evidence, quality_metrics, stats)
             
-            logger.info("Pipeline completed successfully.")
+            # Symlink or copy to base output for convenience
+            import shutil
+            shutil.copy2(snapshot_excel_path, self.config.output_path)
+            
+            logger.info(f"Pipeline completed successfully. Snapshot saved to {snapshot_dir}")
         except Exception as e:
             logger.error(f"Pipeline failed: {str(e)}")
             raise

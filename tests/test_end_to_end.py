@@ -20,7 +20,7 @@ def test_pipeline_end_to_end():
     required_sheets = [
         "Summary", "Raw Evidence", "Market", "User", "Pain Points", 
         "Competitors", "Evidence", "Launch Strategy", "Risk", 
-        "Final Recommendation", "Signal Detection", "Opportunity Score", 
+        "Final Recommendation", "Signal Detection", "Signal Score", 
         "Data Quality", "Logs", "Errors"
     ]
     for sheet in required_sheets:
