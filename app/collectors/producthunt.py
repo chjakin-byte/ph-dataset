@@ -41,7 +41,11 @@ class ProductHuntCollector(BaseCollector):
             logger.warning(f"Failed to authenticate with Product Hunt API: {e}. Using mock token for framework verification.")
             self.token = "MOCK_TOKEN"
 
-    def _query_graphql(self, query: str, variables: Dict[str, Any]) -> Dict[str, Any]:
+    def _query_graphql(self, query: str, variables: Dict[str, Any]) -> Tuple[Dict[str, Any], int]:
+        """
+        Executes a GraphQL query and handles 429 Rate Limits by sleeping.
+        Returns a tuple of (data_dict, num_429_events_triggered).
+        """
         if not self.token:
             self._authenticate()
             
@@ -50,13 +54,27 @@ class ProductHuntCollector(BaseCollector):
             "Accept": "application/json",
             "Content-Type": "application/json"
         }
-        response = requests.post(self.api_url, headers=headers, json={"query": query, "variables": variables})
-        response.raise_for_status()
-        data = response.json()
-        if "errors" in data:
-            logger.error(f"GraphQL errors: {data['errors']}")
-            raise ValueError(f"GraphQL returned errors: {data['errors']}")
-        return data
+        
+        rate_limit_events = 0
+        
+        while True:
+            response = requests.post(self.api_url, headers=headers, json={"query": query, "variables": variables})
+            
+            if response.status_code == 429:
+                rate_limit_events += 1
+                reset_seconds = int(response.headers.get('x-rate-limit-reset', 900))
+                # Add a 5 second buffer to the reset time to be safe
+                sleep_time = reset_seconds + 5
+                logger.warning(f"HTTP 429 Too Many Requests. Sleeping for {sleep_time} seconds before retrying...")
+                time.sleep(sleep_time)
+                continue # Retry the request
+                
+            response.raise_for_status()
+            data = response.json()
+            if "errors" in data:
+                logger.error(f"GraphQL errors: {data['errors']}")
+                raise ValueError(f"GraphQL returned errors: {data['errors']}")
+            return data, rate_limit_events
 
     def collect_comments(self, slug: str) -> List[ProductHuntComment]:
         query = """
@@ -80,7 +98,7 @@ class ProductHuntCollector(BaseCollector):
         variables = {"slug": slug}
         comments = []
         try:
-            data = self._query_graphql(query, variables)
+            data, _ = self._query_graphql(query, variables)
             edges = data.get("data", {}).get("post", {}).get("comments", {}).get("edges", [])
             for edge in edges:
                 node = edge.get("node", {})
@@ -110,9 +128,12 @@ class ProductHuntCollector(BaseCollector):
         
         current_start = start_date
         
+        total_429_events = 0
+
         # Loop through months
         while current_start < end_date and len(all_products) < max_products:
-            current_end = min(current_start + relativedelta(months=1), end_date)
+            # Modified to day-by-day slicing for safer continuous running
+            current_end = min(current_start + relativedelta(days=1), end_date)
             
             start_str = current_start.strftime("%Y-%m-%dT%H:%M:%SZ")
             end_str = current_end.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -165,7 +186,8 @@ class ProductHuntCollector(BaseCollector):
                 }
                 
                 try:
-                    data = self._query_graphql(query, variables)
+                    data, rate_events = self._query_graphql(query, variables)
+                    total_429_events += rate_events
                     posts_data = data.get("data", {}).get("posts", {})
                     edges = posts_data.get("edges", [])
                     page_info = posts_data.get("pageInfo", {})
@@ -216,8 +238,10 @@ class ProductHuntCollector(BaseCollector):
                     
             current_start = current_end
             
-        logger.info(f"Historical collection complete. Products: {len(all_products)}, Comments: {len(all_comments)}")
+        logger.info(f"Historical collection complete. Products: {len(all_products)}, Comments: {len(all_comments)}, 429s: {total_429_events}")
         return {
             "products": all_products,
-            "comments": all_comments
+            "comments": all_comments,
+            "rate_limit_events": total_429_events,
+            "last_cursor": cursor
         }
