@@ -99,11 +99,11 @@ class ProductHuntCollector(BaseCollector):
             
         return comments
 
-    def collect(self, start_date: datetime, end_date: datetime, max_products: int = 5000) -> Dict[str, Any]:
+    def collect(self, start_date: datetime, end_date: datetime, max_products: int = 5000, fetch_comments: bool = True) -> Dict[str, Any]:
         """
         Collects historical data using month-by-month time slicing to avoid timeout/complexity limits.
         """
-        logger.info(f"Starting historical collection from {start_date.isoformat()} to {end_date.isoformat()}")
+        logger.info(f"Starting historical collection from {start_date.isoformat()} to {end_date.isoformat()} (fetch_comments={fetch_comments})")
         
         all_products = []
         all_comments = []
@@ -200,7 +200,7 @@ class ProductHuntCollector(BaseCollector):
                         all_products.append(product)
                         
                         # Fetch comments for this product
-                        if product.comment_count > 0:
+                        if fetch_comments and product.comment_count > 0:
                             p_comments = self.collect_comments(slug)
                             all_comments.extend(p_comments)
                             
