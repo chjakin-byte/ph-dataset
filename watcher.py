@@ -16,14 +16,21 @@ def get_product_count():
 def generate_and_push(count):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Threshold reached ({count} products). Generating reports...")
     
+<<<<<<< HEAD
     # Run operational reports
+=======
+    # Run all report generators
+>>>>>>> origin/feat/producthunt-collector
     subprocess.run(["python", "generate_reports.py"])
     subprocess.run(["python", "audit_data.py"])
     subprocess.run(["python", "generate_coverage_report.py"])
     subprocess.run(["python", "generate_delta_report.py"])
+<<<<<<< HEAD
     
     # Run milestone bundle
     subprocess.run(["python", "generate_milestone_bundle.py"])
+=======
+>>>>>>> origin/feat/producthunt-collector
     
     # Git operations
     print("Committing and pushing reports...")
@@ -32,6 +39,7 @@ def generate_and_push(count):
         "DATA_SAMPLE_REPORT.md", 
         "DATA_AUDIT_REPORT.md", 
         "HISTORICAL_COVERAGE_REPORT.md",
+<<<<<<< HEAD
         "DELTA_REPORT.md",
         "MILESTONE_SAMPLE_100.json",
         "MILESTONE_DISTRIBUTION_REPORT.md",
@@ -39,6 +47,12 @@ def generate_and_push(count):
     ]
     subprocess.run(["git", "add"] + reports)
     commit_msg = f"chore: milestone operational and data audit bundle at {count} products"
+=======
+        "DELTA_REPORT.md"
+    ]
+    subprocess.run(["git", "add"] + reports)
+    commit_msg = f"chore: operational reports update at {count} products"
+>>>>>>> origin/feat/producthunt-collector
     subprocess.run(["git", "commit", "-m", commit_msg])
     
     # We use env variable to prevent prompts
