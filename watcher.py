@@ -16,13 +16,29 @@ def get_product_count():
 def generate_and_push(count):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Threshold reached ({count} products). Generating reports...")
     
-    # Generate reports
+    # Run operational reports
     subprocess.run(["python", "generate_reports.py"])
+    subprocess.run(["python", "audit_data.py"])
+    subprocess.run(["python", "generate_coverage_report.py"])
+    subprocess.run(["python", "generate_delta_report.py"])
+    
+    # Run milestone bundle
+    subprocess.run(["python", "generate_milestone_bundle.py"])
     
     # Git operations
     print("Committing and pushing reports...")
-    subprocess.run(["git", "add", "EXECUTIVE_DASHBOARD.md", "DATA_SAMPLE_REPORT.md"])
-    commit_msg = f"chore: update dashboard and samples for {count} products"
+    reports = [
+        "EXECUTIVE_DASHBOARD.md", 
+        "DATA_SAMPLE_REPORT.md", 
+        "DATA_AUDIT_REPORT.md", 
+        "HISTORICAL_COVERAGE_REPORT.md",
+        "DELTA_REPORT.md",
+        "MILESTONE_SAMPLE_100.json",
+        "MILESTONE_DISTRIBUTION_REPORT.md",
+        "MILESTONE_DATA_AUDIT.md"
+    ]
+    subprocess.run(["git", "add"] + reports)
+    commit_msg = f"chore: milestone operational and data audit bundle at {count} products"
     subprocess.run(["git", "commit", "-m", commit_msg])
     
     # We use env variable to prevent prompts
