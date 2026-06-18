@@ -33,7 +33,10 @@ jobs:
           
       - name: Run Ops Assistant
         env:
+          # Use the user-provided Gemini Key
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Use the built-in, ephemeral Actions token (no custom secret needed)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pass the issue number target
           OPS_ISSUE_NUMBER: ${{ github.event.inputs.issue_number || '1' }}
         run: python ops_assistant_poc.py
