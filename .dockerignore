@@ -1,8 +1,6 @@
+.git
+.env
+data/
 __pycache__/
 *.pyc
-.pytest_cache/
-output/
 .venv/
-venv/
-.git/
-.github/

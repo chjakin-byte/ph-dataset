@@ -1,2 +1,23 @@
+# Secrets
 .env
-output/raw_historical_products.json
+.env.*
+!.env.example
+
+# Collected data and run artifacts (never commit Product Hunt data)
+output/
+data_exports/
+*.json.bak
+*.log
+*.zip
+*_output.txt
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+data/

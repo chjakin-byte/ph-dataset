@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ph-dataset"
+version = "1.0.0"
+description = "Build your own fresh Product Hunt dataset with one command — official API, resumable, rate-limit aware."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "chjakin-byte"}]
+requires-python = ">=3.9"
+dependencies = ["requests>=2.31", "python-dateutil>=2.8", "python-dotenv>=1.0"]
+keywords = ["product-hunt", "dataset", "graphql", "data-collection"]
+classifiers = ["License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3"]
+
+[project.optional-dependencies]
+parquet = ["pyarrow>=12"]
+dev = ["pytest>=7", "ruff>=0.4"]
+
+[project.scripts]
+ph-dataset = "ph_dataset.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/chjakin-byte/ph-dataset"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ph_dataset", "conftest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
