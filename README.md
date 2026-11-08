@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/chjakin-byte/ph-dataset/actions/workflows/ci.yml/badge.svg)](https://github.com/chjakin-byte/ph-dataset/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 <!-- After the first PyPI release, uncomment:
 [![PyPI](https://img.shields.io/pypi/v/ph-dataset.svg)](https://pypi.org/project/ph-dataset/)
 -->
@@ -27,7 +27,7 @@ Code only — no data ships here.
 | Resume after crash / rate limit | n/a | ❌ | ✅ saved cursor + header-aware throttling |
 | Pick date range / topic / featured | ❌ | sometimes | ✅ |
 | Comments, makers | fixed | varies | opt-in |
-| Tests + CI | n/a | rarely | ✅ 21 tests, GitHub Actions |
+| Tests + CI | n/a | rarely | ✅ pytest suite, GitHub Actions |
 
 ## Demo (illustrative output, fake data)
 ```console
@@ -40,6 +40,16 @@ Developer Tools                                58    13022
 Productivity                                   51     9874
 $ ph-dataset export --format parquet
 Wrote 231 products to data/products.parquet
+$ ph-dataset score --votes 180 --topic artificial-intelligence
+artificial-intelligence: 180 votes -> beats 71.6% of 97 launches (median 96, p90 412)
+$ ph-dataset momentum --weeks 4 --top 2
+RISING (last 4 weeks vs previous 4)
+  topic                                 recent  before   growth
+  Artificial Intelligence                   61      38     +61%
+  Developer Tools                           30      24     +25%
+FALLING (last 4 weeks vs previous 4)
+  topic                                 recent  before   growth
+  Fintech                                    6      14     -57%
 ```
 
 ## Install
@@ -47,7 +57,7 @@ Wrote 231 products to data/products.parquet
 pip install "git+https://github.com/chjakin-byte/ph-dataset"          # core
 pip install "ph-dataset[parquet] @ git+https://github.com/chjakin-byte/ph-dataset"  # + Parquet
 ```
-(Python 3.9+. A PyPI release is planned.)
+(Python 3.10+. A PyPI release is planned.)
 
 ## Quickstart
 ```bash
@@ -65,7 +75,14 @@ Get a token at <https://www.producthunt.com/v2/oauth/applications> (create an ap
 | `fetch --since YYYY-MM[-DD] [--until …]` | Collect launches day by day (end date exclusive). Resumable: re-run the same command after a crash and it continues from the saved cursor. |
 | `update` | Fetch every finished UTC day since the last completed day, up to yesterday (first run: last 7 days). Today is skipped until it is over. |
 | `export --format csv\|json\|parquet [--what products\|comments] [--out PATH]` | Write the deduplicated data. Parquet needs `pyarrow`. |
+| `export --format sqlite\|duckdb` | One `products` table for SQL queries. DuckDB needs `pip install "ph-dataset[duckdb]"`. |
 | `trends [--top N] [--weekly]` | Top topics by number of launches and total votes, optionally per ISO week. |
+| `score --product SLUG` / `score --votes N --topic SLUG` | Vote percentile inside each topic, plus the topic median and p90. *(v2)* |
+| `momentum [--weeks 4] [--top 10]` | Rising / falling topics: launches in the last N weeks vs the N weeks before. *(v2)* |
+| `best-time` | Launches and median votes per UTC weekday, with sample size. *(v2)* |
+
+Analysis commands only read your local `data/` — they never call the API. Results show **correlation, not
+causation**: a weekday with higher median votes is not proof that launching then will get you more votes.
 
 Useful flags for `fetch`/`update`: `--featured-only` (only featured launches; a typical day has ~30 featured vs. several hundred total, so far fewer API calls), `--max-products N`, `--topic SLUG`.
 Opt-in flags: `--with-comments` (+`--max-comments`, default 50) and `--with-makers`
@@ -94,8 +111,10 @@ Docker: `docker build -t ph-dataset . && docker run --env-file .env -v "$PWD/dat
 ## Roadmap
 - [x] Resumable, rate-limit-aware collection; CSV/JSON/Parquet export; `trends` (v1.0)
 - [ ] PyPI release
-- [ ] DuckDB query helper and example notebook
-- [ ] More analysis: fastest-growing topics, launch-day vote curves
+- [ ] Example notebook
+- [x] Analytics: `score`, `momentum`, `best-time`, SQLite/DuckDB export (v2.0)
+- [ ] Offline HTML report / dashboard (v3)
+- [ ] Multi-source signals: Hacker News + GitHub (v4)
 - [ ] Optional LLM summaries/clustering of launches from your local dataset
 
 ## Development

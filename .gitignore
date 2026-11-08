@@ -21,3 +21,11 @@ venv/
 dist/
 build/
 data/
+
+# Local databases / dumps (never commit)
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.jsonl
+*.parquet

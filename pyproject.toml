@@ -4,18 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ph-dataset"
-version = "1.0.0"
+version = "2.0.0"
 description = "Build your own fresh Product Hunt dataset with one command — official API, resumable, rate-limit aware."
 readme = "README.md"
 license = {text = "MIT"}
 authors = [{name = "chjakin-byte"}]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = ["requests>=2.31", "python-dateutil>=2.8", "python-dotenv>=1.0"]
 keywords = ["product-hunt", "dataset", "graphql", "data-collection"]
-classifiers = ["License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3"]
+classifiers = ["License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3",
+               "Programming Language :: Python :: 3.10"]
 
 [project.optional-dependencies]
 parquet = ["pyarrow>=12"]
+duckdb = ["duckdb>=0.10"]
 dev = ["pytest>=7", "ruff>=0.4"]
 
 [project.scripts]

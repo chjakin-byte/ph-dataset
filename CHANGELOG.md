@@ -1,6 +1,18 @@
 # Changelog
 
-## [1.0.0] - unreleased
+## [2.0.0] - 2026-10-22
+"Analytics" release. All new commands read only local data; no extra API calls.
+### Added
+- `score` (vote percentile of a product or a vote count inside a topic, with median and p90).
+- `momentum` (rising / falling topics, last N weeks vs previous N weeks).
+- `best-time` (launches and median votes per UTC weekday; correlation, not causation).
+- `export --format sqlite|duckdb` (DuckDB via the optional `[duckdb]` extra).
+- `ph_dataset.demo.fake_products()` deterministic FAKE data generator for tests and demos.
+### Changed
+- Requires Python 3.10+ (CI: 3.10 and 3.12).
+- `.gitignore` now also covers `*.db`, `*.sqlite*`, `*.duckdb`, `*.jsonl`, `*.parquet`.
+
+## [1.0.0] - 2026-10-21
 First public release as **ph-dataset** (rewrite of the private "Jules" prototype).
 ### Added
 - `ph_dataset` package with `ph-dataset` CLI: `fetch`, `update`, `export`, `trends`.
